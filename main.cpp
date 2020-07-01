@@ -5,13 +5,12 @@
 using namespace std;
 
 
-
-static void main2() {
-    cout<<"main2"<< endl;
-    cout<<"main2"<< endl;
-    cout<<"main2"<< endl;
+static ucontext_t ctx[2];
+void main21() {
+    cout <<"co in co 1" << endl;
 }
 int main() {
-    co_routine coRoutine([] { return main2(); });
-    coRoutine.resume();
+   init_env();
+   co_routine co([] { return main21(); });
+   co.resume();
 }
