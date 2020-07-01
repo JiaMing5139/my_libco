@@ -13,10 +13,15 @@ __thread   co_routine* currentRunning = nullptr;
 void co_routine::resume() {
     assert(main_thread_ == currentRunning);
     assert(cb_);
-    makecontext(&ctx_, reinterpret_cast<void (*)(void)>(co_routine::func),1 ,this);
+    if(status_==kEnd){
+        makecontext(&ctx_, reinterpret_cast<void (*)(void)>(co_routine::func),1 ,this);
+    }
     co_swap(main_thread_,this);
+
+
 }
 void co_swap(co_routine * current, co_routine * next){
+    currentRunning = next;
     swapcontext(&current->ctx_,&next->ctx_);
 }
 
@@ -50,12 +55,17 @@ void co_routine::func(void * this_) {
         assert(this_);
         auto* this_co = static_cast<co_routine *>(this_);
         currentRunning = this_co;
+        this_co->status_ = kStart;
         this_co->cb_();
         this_co->yield();
 }
 
 co_routine::~co_routine() {
     delete stackMem_;
+}
+
+void co_routine::reset(co_routine::Task cb) {
+cb_ = std::move(cb);
 }
 
 

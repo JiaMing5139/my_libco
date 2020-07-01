@@ -11,6 +11,8 @@
 // stCoRoutine_t
 class co_routine;
 extern __thread ::co_routine* main_thread_;
+extern __thread ::co_routine* currentRunning;
+
 void co_swap(co_routine * current, co_routine * next);
 
 class co_routine :public noncopyable{
@@ -27,6 +29,7 @@ public:
     ~co_routine();
     void resume();
     void yield();
+    void reset(Task cb);
     static void func(void* this_);
 private:
     char * stackMem_;
