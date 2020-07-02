@@ -5,13 +5,23 @@
 using namespace std;
 
 
-static ucontext_t ctx[2];
 void onMessageCoonection() {
     cout <<"before read" << endl;
     currentRunning->yield();
     cout << "read event start read" << endl;
+}
+
+void accpet_co(int fd){
 
 }
+
+void readwrite_co(int fd){
+
+}
+
+
+
+
 int main() {
    init_env();
    auto * co = new co_routine([] { return onMessageCoonection(); });

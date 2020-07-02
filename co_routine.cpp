@@ -6,9 +6,23 @@
 #include <iostream>
 #include <utility>
 #include <cassert>
+#
 
 __thread  ::co_routine* main_thread_ = nullptr;  // libco  ENV
 __thread   co_routine* currentRunning = nullptr;
+
+
+
+void co_swap(co_routine * current, co_routine * next){
+    currentRunning = next;
+    swapcontext(&current->ctx_,&next->ctx_);
+}
+
+void init_env(){
+    assert(currentRunning == nullptr);
+    main_thread_ = new co_routine();
+    currentRunning = main_thread_;
+}
 
 void co_routine::resume() {
     assert(main_thread_ == currentRunning);
@@ -20,16 +34,7 @@ void co_routine::resume() {
 
 
 }
-void co_swap(co_routine * current, co_routine * next){
-    currentRunning = next;
-    swapcontext(&current->ctx_,&next->ctx_);
-}
 
-void init_env(){
-    assert(currentRunning == nullptr);
-    main_thread_ = new co_routine();
-    currentRunning = main_thread_;
-}
 
 
 co_routine::co_routine(Task cb):cb_(std::move(cb)) {
@@ -45,6 +50,7 @@ co_routine::co_routine(Task cb):cb_(std::move(cb)) {
 
 
 void co_routine::yield() {
+    assert(main_thread_ != currentRunning);
     currentRunning = main_thread_;
     co_swap(this,main_thread_);
 
@@ -61,10 +67,12 @@ void co_routine::func(void * this_) {
 }
 
 co_routine::~co_routine() {
+    assert(status_== kEnd);
     delete stackMem_;
 }
 
 void co_routine::reset(co_routine::Task cb) {
+    assert(cb);
 cb_ = std::move(cb);
 }
 

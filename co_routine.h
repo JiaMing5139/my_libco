@@ -31,11 +31,19 @@ public:
     void yield();
     void reset(Task cb);
     static void func(void* this_);
+
+    void setMain(){
+        isMain_ = true;
+    }
+    bool isMain(){
+        return isMain_;
+    }
 private:
     char * stackMem_;
     ::ucontext_t ctx_{};  // libco stCoRoutineEnv_t
     Task cb_;
     status status_ = kEnd;
+    bool isMain_ = false;
 };
 
 void init_env();
