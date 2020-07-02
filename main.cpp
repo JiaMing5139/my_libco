@@ -2,6 +2,7 @@
 #include "util.h"
 #include <ucontext.h>
 #include "co_routine.h"
+#include "CoRoutineEnv.h"
 using namespace std;
 
 
@@ -23,9 +24,10 @@ void readwrite_co(int fd){
 
 
 int main() {
-   init_env();
+   CoRoutineEnv:: init_CoRoutineEnv();
    auto * co = new co_routine([] { return onMessageCoonection(); });
    co->resume();
    cout << "read event re running co" << endl;
    co->resume();
+   delete co;
 }

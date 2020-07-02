@@ -8,8 +8,8 @@
 #include <ucontext.h>
 #include <functional>
 #include "noncopyable.h"
+#include "CoRoutineEnv.h"
 // stCoRoutine_t
-class co_routine;
 extern __thread ::co_routine* main_thread_;
 extern __thread ::co_routine* currentRunning;
 
@@ -38,12 +38,18 @@ public:
     bool isMain(){
         return isMain_;
     }
+    CoRoutineEnv::CoRoutineEnv_t * env(){
+        return env_;
+    }
+
 private:
     char * stackMem_;
     ::ucontext_t ctx_{};  // libco stCoRoutineEnv_t
     Task cb_;
     status status_ = kEnd;
+
     bool isMain_ = false;
+    CoRoutineEnv::CoRoutineEnv_t * env_;
 };
 
 void init_env();
