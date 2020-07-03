@@ -39,8 +39,6 @@ void Epoll::updateChannel(Poller::Channelptr channel) {
 #ifdef  NDEBUG
         LOG_TRACE << "fd:"<< Poller::channels_[channel->fd()]->fd()<< " has been added";
 #endif
-
-
     }else{
 
         update(EPOLL_CTL_MOD, channel);

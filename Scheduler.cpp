@@ -31,6 +31,7 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
 void Scheduler::onClose(int fd) {
     auto it = map_.find(fd);
     if (it != map_.end()) {
+        it->second->cancle();
         map_.erase(it);
     }
 }
@@ -44,6 +45,7 @@ void Scheduler::disablewrite(int fd) {
 
 Co_channel::Co_channel(EventLoop *loop, int fd, co_routine *co) :
         channelptr_(new Channel(loop, fd)),
+        loop_(loop),
         coRoutine_(co) {
     channelptr_->setReadCallBack(std::bind(&Co_channel::onMessage, this));
     channelptr_->setWriteCallBack(std::bind(&Co_channel::onWrite, this));
@@ -88,6 +90,7 @@ int co_wirte_block(int fd, char *buf, size_t nbyte) {
             break;
         }
         wrotelen += writeret ;
+
     }
 
     scheduler->disablewrite(fd);
@@ -108,6 +111,12 @@ int co_accept_block( Socket * socket,InetAddress & address) {
     InetAddress addr;
     int fd = socket->accept(&addr);
     return fd;
+}
+
+int  co_close(int fd){
+    auto scheduler = CoRoutineEnv::get_Scheduler();
+    scheduler->onClose(fd);
+    close(fd);
 }
 
 

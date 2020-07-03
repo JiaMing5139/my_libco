@@ -26,14 +26,16 @@ public:
         channelptr_->enableWrite();
     }
     void disableWrite(){
+        if(channelptr_->isWtriting())
         channelptr_->disableWriting();
     }
 
     void enableRead(){
         channelptr_->enableRead();
     }
-    ~Co_channel(){
-        loop_->cancel(channelptr_); //delete event from epoll
+    void cancle(){
+        assert(this);
+        loop_->cancel(channelptr_);
     }
 
 
@@ -64,5 +66,6 @@ private:
 int co_read_block(int fd,char *buffer,size_t);
 int co_wirte_block(int fd,char *buffer,size_t);
 int co_accept_block(Socket * socket,InetAddress & address);
+int co_close(int fd);
 
 #endif //MY_LIBCO_SCHEDULER_H

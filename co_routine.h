@@ -29,7 +29,7 @@ public:
     ~co_routine();
     void resume();
     void yield();
-    void reset(Task cb);
+    void reset(const Task& cb);
     static void func(void* this_);
 
     void setMain(){
