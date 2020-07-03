@@ -13,7 +13,7 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
     auto it = map_.find(fd);
     if(it == map_.end()){
         Co_channel::Co_channelPtr newCo_channel(new Co_channel(loop_, fd, coRoutine));
-        //TimerId = runAfter();
+
         map_[fd] = std::move(newCo_channel);
     }
     auto channel = map_[fd];
@@ -49,6 +49,7 @@ Co_channel::Co_channel(EventLoop *loop, int fd, co_routine *co) :
         coRoutine_(co) {
     channelptr_->setReadCallBack(std::bind(&Co_channel::onMessage, this));
     channelptr_->setWriteCallBack(std::bind(&Co_channel::onWrite, this));
+    channelptr_->setErrorCallBack(std::bind(&Co_channel::onMessage, this));
 }
 
 int co_read_block(int fd, char *buffer, size_t len) {

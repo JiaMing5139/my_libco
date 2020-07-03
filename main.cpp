@@ -22,14 +22,17 @@ static int g_listen_fd = -1;
 
 void accpet_co(Socket *socket, InetAddress &address) {
     for (;;) {
+        if( g_readwrite.empty())
+        {
+            //     close( fd );
+            cout <<"empty" << endl;
+            continue;
+        }
+
         int fd = co_accept_block(socket, address);
         LOG_INFO << "get a new fd" << fd << endl;
 
-        if( g_readwrite.empty() )
-        {
-       //     close( fd );
-            continue;
-        }
+
         task_t *co = g_readwrite.top();
         co->fd = fd;
         g_readwrite.pop();
@@ -72,14 +75,14 @@ void readwrite_co(task_t *task) {
 int main() {
 
     CoRoutineEnv::init_CoRoutineEnv();
-    for(int k = 0; k <3 ;k++){
+//    for(int k = 0; k <3 ;k++){
 
-        pid_t pid = fork();
-        if(pid > 0){
-            continue;
-        } else if(pid < 0){
-            break;
-        }
+//        pid_t pid = fork();
+//        if(pid > 0){
+//            continue;
+//        } else if(pid < 0){
+//            break;
+//        }
         Socket *socket1 = new Socket;
         InetAddress address(2334);
         socket1->setReuseAddr(true);
@@ -88,7 +91,7 @@ int main() {
         socket1->bindAddress(address);
         socket1->listen();
         InetAddress peerAddr;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10000; i++) {
             task_t *task2 = (task_t *) calloc(1, sizeof(task_t));
             task2->fd = -1;
             task2->co = new co_routine(std::bind(readwrite_co, task2));
@@ -99,9 +102,8 @@ int main() {
         auto env = CoRoutineEnv::co_get_curr_thread_env();
         env->pEpoll->loop();
         exit(0);
-    }
+//   }
 
-      wait();
 
 
 }
