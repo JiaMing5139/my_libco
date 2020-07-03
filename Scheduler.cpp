@@ -13,18 +13,18 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
     auto it = map_.find(fd);
     if(it == map_.end()){
         Co_channel::Co_channelPtr newCo_channel(new Co_channel(loop_, fd, coRoutine));
-        switch (operation) {
-            case READ:
-                newCo_channel->enableRead();
-                break;
-            case WRITE:
-                newCo_channel->enableWrite();
-                break;
-        }
         //TimerId = runAfter();
         map_[fd] = std::move(newCo_channel);
     }
-
+    auto channel = map_[fd];
+    switch (operation) {
+        case READ:
+            channel->enableRead();
+            break;
+        case WRITE:
+            channel->enableWrite();
+            break;
+    }
     coRoutine->yield();
 }
 

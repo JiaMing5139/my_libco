@@ -11,6 +11,7 @@
 #include "InetAddress.h"
 #include <map>
 #include <memory>
+#include <sys/poll.h>
 class EventLoop;
 class Co_channel{
 public:
@@ -31,6 +32,7 @@ public:
     }
 
     void enableRead(){
+       if( !(channelptr_->events() & POLLIN))
         channelptr_->enableRead();
     }
     void cancle(){

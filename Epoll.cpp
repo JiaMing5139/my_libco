@@ -122,7 +122,5 @@ void Epoll::fillActiveChannels(int numEvents, Poller::Channelptrlist *actived) {
         }
 
     }
-
-
 }
 #endif

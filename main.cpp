@@ -8,6 +8,7 @@
 #include <stack>
 #include "Scheduler.h"
 #include "log/logger.h"
+#include <unistd.h>
 
 using namespace std;
 
@@ -71,26 +72,36 @@ void readwrite_co(task_t *task) {
 int main() {
 
     CoRoutineEnv::init_CoRoutineEnv();
+    for(int k = 0; k <3 ;k++){
 
-    Socket *socket1 = new Socket;
-    InetAddress address(2333);
-    socket1->setReuseAddr(true);
-    socket1->setReusePort(true);
-    socket1->setTcpNoDelay(true);
-    socket1->bindAddress(address);
-    socket1->listen();
-    InetAddress peerAddr;
-
-    for (int i = 0; i < 5; i++) {
-        task_t *task2 = (task_t *) calloc(1, sizeof(task_t));
-        task2->fd = -1;
-        task2->co = new co_routine(std::bind(readwrite_co, task2));
-        task2->co->resume();
+        pid_t pid = fork();
+        if(pid > 0){
+            continue;
+        } else if(pid < 0){
+            break;
+        }
+        Socket *socket1 = new Socket;
+        InetAddress address(2334);
+        socket1->setReuseAddr(true);
+        socket1->setReusePort(true);
+        socket1->setTcpNoDelay(true);
+        socket1->bindAddress(address);
+        socket1->listen();
+        InetAddress peerAddr;
+        for (int i = 0; i < 5; i++) {
+            task_t *task2 = (task_t *) calloc(1, sizeof(task_t));
+            task2->fd = -1;
+            task2->co = new co_routine(std::bind(readwrite_co, task2));
+            task2->co->resume();
+        }
+        co_routine co(std::bind(accpet_co, socket1, peerAddr));
+        co.resume();
+        auto env = CoRoutineEnv::co_get_curr_thread_env();
+        env->pEpoll->loop();
+        exit(0);
     }
 
-    co_routine co(std::bind(accpet_co, socket1, peerAddr));
-    co.resume();
+      wait();
 
-    auto env = CoRoutineEnv::co_get_curr_thread_env();
-    env->pEpoll->loop();
+
 }
