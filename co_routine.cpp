@@ -56,12 +56,11 @@ co_routine::co_routine(Task cb)
 
 
 void co_routine::yield() {
-
+//    assert(status_==kEnd);
     co_routine *lpCurrRoutine = env_->pCallStack[env_->iCallStackSize - 2];
     env_->iCallStackSize --;
     currentRunning = lpCurrRoutine;
     co_swap(this, lpCurrRoutine);
-
 }
 
 
@@ -71,6 +70,7 @@ void co_routine::func(void *this_) {
     currentRunning = this_co;
     this_co->status_ = kStart;
     this_co->cb_();
+    this_co->status_ = kEnd;
     this_co->yield();
 }
 

@@ -4,9 +4,11 @@
 
 #include "CoRoutineEnv.h"
 #include "co_routine.h"
+#include "Scheduler.h"
 namespace CoRoutineEnv {
-
+     __thread Scheduler * scheduler;
      __thread CoRoutineEnv_t* gCoEnvPerThread ;
+
 
     void init_CoRoutineEnv(){
         gCoEnvPerThread = (CoRoutineEnv_t*)calloc( 1, sizeof(CoRoutineEnv_t) );
@@ -22,8 +24,13 @@ namespace CoRoutineEnv {
         env->pCallStack[ env->iCallStackSize++ ] = self;
         auto *ev = new EventLoop;
         env->pEpoll = ev;
+
+        scheduler = new Scheduler(ev);
     }
 
+    Scheduler *get_Scheduler(){
+        return scheduler;
+    }
     CoRoutineEnv_t* co_get_curr_thread_env(){
         return gCoEnvPerThread;
     }

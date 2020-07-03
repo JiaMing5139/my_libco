@@ -7,8 +7,11 @@
 
 
 #include "EventLoop.h"
+
 #include <cassert>
+
 class co_routine;
+class Scheduler;
 namespace CoRoutineEnv {
     typedef struct CoRoutineEnv_t {
         co_routine *pCallStack[128];
@@ -20,10 +23,11 @@ namespace CoRoutineEnv {
         co_routine *pending_co;
         co_routine *occupy_co;
     } CoRoutineEnv_t;
-
     extern __thread CoRoutineEnv_t *gCoEnvPerThread;
 
-    CoRoutineEnv_t* co_get_curr_thread_env();
+    Scheduler *get_Scheduler();
+
+    CoRoutineEnv_t *co_get_curr_thread_env();
 
     co_routine *GetCurrCo(CoRoutineEnv_t *env);
 

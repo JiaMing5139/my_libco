@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <unistd.h>
 const int Channel::NoneEvent = 0;
-const int Channel::ReadEvent = POLLIN | POLLPRI;
+const int Channel::ReadEvent = POLLIN | POLLPRI | POLLHUP;
 const int Channel::WriteEvent = POLLOUT;
 
 

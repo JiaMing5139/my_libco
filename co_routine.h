@@ -47,12 +47,10 @@ private:
     ::ucontext_t ctx_{};  // libco stCoRoutineEnv_t
     Task cb_;
     status status_ = kEnd;
-
     bool isMain_ = false;
     CoRoutineEnv::CoRoutineEnv_t * env_;
 };
 
-void init_env();
 
 
 

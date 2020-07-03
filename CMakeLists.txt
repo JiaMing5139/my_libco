@@ -29,4 +29,4 @@ add_executable(my_libco
         myeventFd.h myeventFd.cpp
         currentThread.cpp currentThread.h
         CallBack.h
-        Channel.h Channel.cpp CoRoutineEnv.cpp CoRoutineEnv.h)
+        Channel.h Channel.cpp CoRoutineEnv.cpp CoRoutineEnv.h Scheduler.cpp Scheduler.h)
