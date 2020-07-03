@@ -20,17 +20,26 @@ struct task_t {
 static stack<task_t *> g_readwrite;
 static int g_listen_fd = -1;
 
-void accpet_co(Socket *socket, InetAddress &address) {
+void accpet_co(int lisenfd, InetAddress &address) {
     for (;;) {
         if( g_readwrite.empty())
         {
             //     close( fd );
+            co_sleep(3);
             cout <<"empty" << endl;
             continue;
         }
 
-        int fd = co_accept_block(socket, address);
-        LOG_INFO << "get a new fd" << fd << endl;
+        int fd = co_accept_block( lisenfd, address,3);
+        LOG_INFO << "accept get" << fd << endl;
+        if(fd < 0){
+            continue;
+        }
+        if( g_readwrite.empty() )
+        {
+            close( fd );
+            continue;
+        }
 
 
         task_t *co = g_readwrite.top();
@@ -54,11 +63,11 @@ void readwrite_co(task_t *task) {
 
         for(;;)
         {
-            int ret = co_read_block( fd,buf,sizeof(buf) );
+            int ret = co_read_block( fd,buf,sizeof(buf),3);
             cout << buf  << endl;
             if( ret > 0 )
             {
-                ret = co_wirte_block( fd,buf,ret );
+                ret = co_wirte_block( fd,buf,ret ,3);
             }
             if( ret > 0 || ( -1 == ret && EAGAIN == errno ) )
             {
@@ -91,13 +100,13 @@ int main() {
         socket1->bindAddress(address);
         socket1->listen();
         InetAddress peerAddr;
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 3; i++) {
             task_t *task2 = (task_t *) calloc(1, sizeof(task_t));
             task2->fd = -1;
             task2->co = new co_routine(std::bind(readwrite_co, task2));
             task2->co->resume();
         }
-        co_routine co(std::bind(accpet_co, socket1, peerAddr));
+        co_routine co(std::bind(accpet_co, socket1->fd(), peerAddr));
         co.resume();
         auto env = CoRoutineEnv::co_get_curr_thread_env();
         env->pEpoll->loop();

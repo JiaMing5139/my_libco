@@ -12,15 +12,18 @@
 #include <map>
 #include <memory>
 #include <sys/poll.h>
+#include <iostream>
 class EventLoop;
 class Co_channel{
 public:
     typedef std::shared_ptr<Co_channel > Co_channelPtr;
     Co_channel(EventLoop *loop,int fd,co_routine*);
     void onMessage(){
+        loop_->cancleTimer(timerId_);
         coRoutine_->resume();
     }
-    void onWrite(){
+    void ontimeout(){
+        std::cout << "time_out" <<std::endl;
         coRoutine_->resume();
     }
     void enableWrite(){
@@ -30,6 +33,8 @@ public:
         if(channelptr_->isWtriting())
         channelptr_->disableWriting();
     }
+
+    void add_timeout(double seconds);
 
     void enableRead(){
        if( !(channelptr_->events() & POLLIN))
@@ -42,6 +47,7 @@ public:
 
 
 private:
+    TimerId timerId_;
     EventLoop * loop_;
     Channel::Channelptr channelptr_;
     co_routine * coRoutine_;
@@ -56,7 +62,7 @@ enum Wait_operation{
 };
 void register_and_wait(int fd,co_routine* coRoutine,double timeout,Wait_operation);
 void onClose(int fd);
-
+void sleep(double timeout,co_routine *coRoutine);
 void disablewrite(int fd);
 
 
@@ -65,9 +71,11 @@ private:
     std::map<int,Co_channel::Co_channelPtr> map_;
 };
 
-int co_read_block(int fd,char *buffer,size_t);
-int co_wirte_block(int fd,char *buffer,size_t);
-int co_accept_block(Socket * socket,InetAddress & address);
+
+int co_read_block(int fd,char *buffer,size_t, double timeout);
+int co_wirte_block(int fd,char *buffer,size_t,double timeout);
+int co_accept_block(int fd,InetAddress & address,double timeout);
 int co_close(int fd);
+void co_sleep(double timeout);
 
 #endif //MY_LIBCO_SCHEDULER_H

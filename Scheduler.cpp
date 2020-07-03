@@ -13,7 +13,6 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
     auto it = map_.find(fd);
     if(it == map_.end()){
         Co_channel::Co_channelPtr newCo_channel(new Co_channel(loop_, fd, coRoutine));
-
         map_[fd] = std::move(newCo_channel);
     }
     auto channel = map_[fd];
@@ -25,8 +24,13 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
             channel->enableWrite();
             break;
     }
+    if(timeout > 0){
+        channel->add_timeout(timeout);
+    }
     coRoutine->yield();
 }
+
+
 
 void Scheduler::onClose(int fd) {
     auto it = map_.find(fd);
@@ -42,27 +46,42 @@ void Scheduler::disablewrite(int fd) {
     it->second->disableWrite();
 }
 
+void wakeUpfromSleep(co_routine *coRoutine){
+    coRoutine->resume();
+}
+
+void Scheduler::sleep(double timeout, co_routine *coRoutine) {
+    if(timeout > 0)
+    loop_->runAfter(timeout,std::bind(wakeUpfromSleep,coRoutine));
+    coRoutine->yield();
+}
+
 
 Co_channel::Co_channel(EventLoop *loop, int fd, co_routine *co) :
         channelptr_(new Channel(loop, fd)),
         loop_(loop),
         coRoutine_(co) {
+ //   timerId_ = loop_->runAfter(timeout,std::bind(&Co_channel::onMessage, this));
     channelptr_->setReadCallBack(std::bind(&Co_channel::onMessage, this));
-    channelptr_->setWriteCallBack(std::bind(&Co_channel::onWrite, this));
+    channelptr_->setWriteCallBack(std::bind(&Co_channel::onMessage, this));
     channelptr_->setErrorCallBack(std::bind(&Co_channel::onMessage, this));
 }
 
-int co_read_block(int fd, char *buffer, size_t len) {
+void Co_channel::add_timeout(double seconds) {
+    timerId_ = loop_->runAfter(seconds,std::bind(&Co_channel::ontimeout, this));
+}
+
+int co_read_block(int fd, char *buffer, size_t len,double timetout) {
     auto currenEnv = CoRoutineEnv::co_get_curr_thread_env();
     auto scheduler = CoRoutineEnv::get_Scheduler();
     auto current_co = CoRoutineEnv::GetCurrCo(currenEnv);
 
-    scheduler->register_and_wait(fd, current_co, 1000, Scheduler::READ);
+    scheduler->register_and_wait(fd, current_co, timetout, Scheduler::READ);
     int n = read(fd, buffer, len);
     return n;
 }
 
-int co_wirte_block(int fd, char *buf, size_t nbyte) {
+int co_wirte_block(int fd, char *buf, size_t nbyte,double timetout) {
     auto currenEnv = CoRoutineEnv::co_get_curr_thread_env();
     auto scheduler = CoRoutineEnv::get_Scheduler();
     auto current_co = CoRoutineEnv::GetCurrCo(currenEnv);
@@ -83,7 +102,7 @@ int co_wirte_block(int fd, char *buf, size_t nbyte) {
     while( wrotelen < nbyte )
     {
 
-        scheduler->register_and_wait(fd, current_co, 1000, Scheduler::WRITE);
+        scheduler->register_and_wait(fd, current_co, timetout, Scheduler::WRITE);
         writeret = write( fd,(const char*)buf + wrotelen,nbyte - wrotelen );
 
         if( writeret <= 0 )
@@ -103,21 +122,31 @@ int co_wirte_block(int fd, char *buf, size_t nbyte) {
 
 }
 
-int co_accept_block( Socket * socket,InetAddress & address) {
+int co_accept_block( int fd,InetAddress & address,double timetout) {
     auto currenEnv = CoRoutineEnv::co_get_curr_thread_env();
     auto scheduler = CoRoutineEnv::get_Scheduler();
     auto current_co = CoRoutineEnv::GetCurrCo(currenEnv);
-
-    scheduler->register_and_wait(socket->fd(), current_co, 1000, Scheduler::READ);
+    scheduler->register_and_wait(fd, current_co, timetout, Scheduler::READ);
     InetAddress addr;
-    int fd = socket->accept(&addr);
-    return fd;
+    struct sockaddr_in6 peerAddr{};
+    socklen_t len ;
+    int newfd = accept(fd, (struct sockaddr *) &peerAddr, &len);
+    address.setSockAddrInet6(peerAddr);
+    return newfd;
 }
 
 int  co_close(int fd){
     auto scheduler = CoRoutineEnv::get_Scheduler();
     scheduler->onClose(fd);
     close(fd);
+}
+
+void co_sleep(double timeout){
+    auto currenEnv = CoRoutineEnv::co_get_curr_thread_env();
+    auto scheduler = CoRoutineEnv::get_Scheduler();
+    auto current_co = CoRoutineEnv::GetCurrCo(currenEnv);
+    scheduler->sleep(timeout,current_co);
+
 }
 
 

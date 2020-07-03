@@ -53,9 +53,6 @@ void TimerQueuebase::cancel(const TimerId &id) {
         if(it!= timerList_.end())
             timerList_.erase(timerpair);
     }
-
-
-
 }
 
 struct timespec howMuchTimeFromNow(Timestamp when) {
