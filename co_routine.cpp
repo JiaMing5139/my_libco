@@ -7,11 +7,11 @@
 #include <utility>
 #include <cassert>
 #include "CoRoutineEnv.h"
+#include "Channel.h"
 
 
 
 void co_swap(co_routine *current, co_routine *next) {
-
     swapcontext(&current->ctx_, &next->ctx_);
 }
 
@@ -71,6 +71,14 @@ co_routine::~co_routine() {
 void co_routine::reset(const co_routine::Task& cb) {
     assert(cb);
     cb_ = cb;
+}
+
+void co_routine::setChannel(std::shared_ptr<Channel> ptr) {
+    channelWeakPtr = ptr;
+}
+
+std::weak_ptr<Channel> co_routine::getChannel() {
+    return channelWeakPtr;
 }
 
 

@@ -152,5 +152,9 @@ void TimerQueuebase::debugTimerQueue() {
 
 }
 
+int TimerQueuebase::numofTimer() {
+    return timerList_.size();
+}
+
 
 

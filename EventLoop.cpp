@@ -185,6 +185,10 @@ void EventLoop::cancleTimerInloop(const TimerId &id) {
     timerQueue.cancel(id);
 }
 
+int EventLoop::numofTimer() {
+    timerQueue.numofTimer();
+}
+
 
 
 

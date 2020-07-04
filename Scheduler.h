@@ -13,6 +13,7 @@
 #include <memory>
 #include <sys/poll.h>
 #include <iostream>
+#include <stack>
 class EventLoop;
 class Co_channel{
 public:
@@ -20,10 +21,11 @@ public:
     Co_channel(EventLoop *loop,int fd,co_routine*);
     void onMessage(){
         loop_->cancleTimer(timerId_);
+
         coRoutine_->resume();
     }
     void ontimeout(){
-        std::cout << "time_out" <<std::endl;
+
         coRoutine_->resume();
     }
     void enableWrite(){
@@ -47,11 +49,13 @@ public:
 
 
 private:
+    int fd;
     TimerId timerId_;
     EventLoop * loop_;
     Channel::Channelptr channelptr_;
     co_routine * coRoutine_;
 };
+
 class Scheduler :public noncopyable{
 public:
     explicit Scheduler(EventLoop*loop):loop_(loop){

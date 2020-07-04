@@ -17,6 +17,7 @@ public:
     ~TimerQueue();
     TimerId addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
     void cancel(const TimerId & id);
+    int numofTimer();
 
 
 private:

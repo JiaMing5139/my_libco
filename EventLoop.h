@@ -33,10 +33,10 @@ public:
     void quit();
 
 
-    // TimerId用于指定定时器操作（像取消操作) 尚未实现
     TimerId runAt(Timestamp timerstamp, TimerCallback cb);
     TimerId runAfter(double delay, TimerCallback cb);
     TimerId runEvery(double interval, TimerCallback cb);
+    int numofTimer();
     void cancleTimer(const TimerId & id);
 
 

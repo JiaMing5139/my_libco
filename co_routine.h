@@ -9,12 +9,13 @@
 #include <functional>
 #include "noncopyable.h"
 #include "CoRoutineEnv.h"
+#include <memory>
 // stCoRoutine_t
 extern __thread ::co_routine* main_thread_;
 extern __thread ::co_routine* currentRunning;
 
 void co_swap(co_routine * current, co_routine * next);
-
+class Channel;
 class co_routine :public noncopyable{
 public:
     friend void co_swap(co_routine * current, co_routine * next);
@@ -32,6 +33,12 @@ public:
     void reset(const Task& cb);
     static void func(void* this_);
 
+    void setSleep(bool flag){
+        isSleep_ = flag;
+    }
+    bool isSleep(){
+       return isSleep_;
+    }
     void setMain(){
         isMain_ = true;
     }
@@ -41,6 +48,9 @@ public:
     CoRoutineEnv::CoRoutineEnv_t * env(){
         return env_;
     }
+    void setChannel(std::shared_ptr<Channel> ptr);
+
+    std::weak_ptr<Channel> getChannel();
 
 private:
     char * stackMem_;
@@ -48,7 +58,10 @@ private:
     Task cb_;
     status status_ = kEnd;
     bool isMain_ = false;
+    bool isSleep_ = false;
     CoRoutineEnv::CoRoutineEnv_t * env_;
+    std::weak_ptr<Channel> channelWeakPtr;
+
 };
 
 

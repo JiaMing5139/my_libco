@@ -32,6 +32,7 @@ void accpet_co(int lisenfd, InetAddress &address) {
 
         int fd = co_accept_block( lisenfd, address,3);
         LOG_INFO << "accept get" << fd << endl;
+        cout <<"accept get" << fd << endl;
         if(fd < 0){
             continue;
         }
@@ -54,7 +55,6 @@ void readwrite_co(task_t *task) {
     for (;;) {
         if (-1 == task->fd) {
             g_readwrite.push(task);
-            LOG_INFO << "waiting for new fd a new fd"  << endl;
             task->co->yield();
             continue;
         }
@@ -64,7 +64,7 @@ void readwrite_co(task_t *task) {
         for(;;)
         {
             int ret = co_read_block( fd,buf,sizeof(buf),3);
-            cout << buf  << endl;
+            cout <<"a"<< buf  << endl;
             if( ret > 0 )
             {
                 ret = co_wirte_block( fd,buf,ret ,3);
@@ -83,6 +83,7 @@ void readwrite_co(task_t *task) {
 
 int main() {
 
+    Jimmy::Logger::setLevel(Jimmy::Logger::CLOSEED);
     CoRoutineEnv::init_CoRoutineEnv();
 //    for(int k = 0; k <3 ;k++){
 
@@ -100,7 +101,7 @@ int main() {
         socket1->bindAddress(address);
         socket1->listen();
         InetAddress peerAddr;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10000; i++) {
             task_t *task2 = (task_t *) calloc(1, sizeof(task_t));
             task2->fd = -1;
             task2->co = new co_routine(std::bind(readwrite_co, task2));

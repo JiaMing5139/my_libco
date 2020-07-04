@@ -21,3 +21,7 @@ TimerQueue::~TimerQueue() {
 void TimerQueue::cancel(const TimerId &id) {
      timerimpl_->cancel(id);
 }
+
+int TimerQueue::numofTimer() {
+    timerimpl_->numofTimer();
+}
