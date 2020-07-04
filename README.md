@@ -9,11 +9,6 @@ make
 
 ###  
 
-int co_read_block(int fd,char *buffer,size_t, double timeout);
-int co_wirte_block(int fd,char *buffer,size_t,double timeout);
-int co_accept_block(int fd,InetAddress & address,double timeout);
-int co_close(int fd);
-void co_sleep(double timeout);
 
 ### echo_server example
 ```
@@ -25,7 +20,6 @@ static stack<task_t *> g_readwrite;
 void accpet_co(int lisenfd, InetAddress &address) {
     for (;;) {
         if (g_readwrite.empty()) {
-            //     close( fd );
             co_sleep(1);
             cout << "empty" << endl;
             continue;
@@ -58,7 +52,6 @@ void readwrite_co(task_t *task) {
         task->fd = -1;
         for (;;) {
             int ret = co_read_block(fd, buf, sizeof(buf), 3);
-            cout << "a" << buf << endl;
             if (ret > 0) {
                 ret = co_wirte_block(fd, buf, ret, 1);
             }
