@@ -21,7 +21,6 @@ public:
     Co_channel(EventLoop *loop,int fd,co_routine*);
     void onMessage(){
         loop_->cancleTimer(timerId_);
-
         coRoutine_->resume();
     }
     void ontimeout(){

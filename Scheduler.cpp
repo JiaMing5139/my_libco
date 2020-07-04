@@ -28,6 +28,11 @@ void Scheduler::register_and_wait(int fd, co_routine *coRoutine, double timeout,
         channel->add_timeout(timeout);
     }
     coRoutine->yield();
+
+   auto i = coRoutine->getChannel().lock();
+   if(i){
+       i->disableAll();
+   }
 }
 
 
@@ -46,8 +51,6 @@ void Scheduler::disablewrite(int fd) {
 }
 
 void wakeUpfromSleep(co_routine *coRoutine) {
-    struct timeval sec;
-    gettimeofday(&sec, 0);
 
     coRoutine->resume();
 }
@@ -57,10 +60,10 @@ void Scheduler::sleep(double timeout, co_routine *coRoutine) {
 
     if (timeout > 0)
     {
-        auto i = coRoutine->getChannel().lock();
-        if(i){
-            i->disableAll();
-        }
+//        auto i = coRoutine->getChannel().lock();
+//        if(i){
+//            i->disableAll();
+//        }
         loop_->runAfter(timeout, std::bind(wakeUpfromSleep, coRoutine));
         coRoutine->yield();
     }
