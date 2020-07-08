@@ -5,9 +5,22 @@ cmake CMakeList.txt
 make
 ./my_libco
 ```
+### Coroutine
+```
+co = new co_routine(std::bind(test));
+co->resume();
+co->yield();
 
+```
 
-###  
+### No hook
+```
+int co_read_block(int fd,char *buffer,size_t, double timeout);
+int co_wirte_block(int fd,char *buffer,size_t,double timeout);
+int co_accept_block(int fd,InetAddress & address,double timeout);
+int co_close(int fd);
+void co_sleep(double timeout);
+```
 
 
 ### echo_server example
